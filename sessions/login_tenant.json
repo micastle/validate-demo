@@ -1,0 +1,215 @@
+{
+    "Name": "开发者门户租管访问会话",
+    "Description": "开发者门户租户管理员访问应用中台控制台的基本会话",
+    "Context": {
+        "userName": "tenantadmin@tenant",
+        "passwd": "pwd",
+        "encryptionFlag": 0
+    },
+    "Steps": [
+        {
+            "Id": "租户管理员登录",
+            "PreActions": [
+                {
+                    "Type": "Assign",
+                    "Name": "assign_body_userName",
+                    "From": "Context:userName",
+                    "To": "Body:userName"
+                },
+                {
+                    "Type": "Assign",
+                    "Name": "assign_body_passwd",
+                    "From": "Context:passwd",
+                    "To": "Body:passwd"
+                },
+                {
+                    "Type": "Assign",
+                    "Name": "assign_body_encryptionFlag",
+                    "From": "Context:encryptionFlag",
+                    "To": "Body:encryptionFlag"
+                }
+            ],
+            "Request": {
+                "Method": "POST",
+                "Url": "http://alpha.yunlizhihui.com/api/usercenter/authenticate/login",
+                "Params": null,
+                "Headers": null,
+                "Body": {
+                    "userName": "",
+                    "passwd": "",
+                    "encryptionFlag": 0
+                }
+            },
+            "Asserts": [
+                {
+                    "Type": "Equal",
+                    "Left": "Body:code",
+                    "Right": "0"
+                },
+                {
+                    "Type": "NotNullOrEmpty",
+                    "Left": "Header:token"
+                },
+                {
+                    "Type": "NotNullOrEmpty",
+                    "Left": "Body:result.userInfoVo.userId"
+                },
+                {
+                    "Type": "NotNullOrEmpty",
+                    "Left": "Body:result.userInfoVo.userType"
+                },
+                {
+                    "Type": "NullOrEmpty",
+                    "Left": "Body:result.authList"
+                }
+            ],
+            "PostActions": [
+                {
+                    "Type": "Assign",
+                    "Name": "save_body_userId",
+                    "From": "Body:result.userInfoVo.userId",
+                    "To": "Context:userId"
+                },
+                {
+                    "Type": "Assign",
+                    "Name": "save_body_token",
+                    "From": "Header:token",
+                    "To": "Context:token"
+                },
+                {
+                    "Type": "Assign",
+                    "Name": "save_body_userType",
+                    "From": "Body:result.userInfoVo.userType",
+                    "To": "Context:userType"
+                }
+            ]
+        },
+        {
+            "Id": "请求租户信息",
+            "PreActions": [
+                {
+                    "Type": "Assign",
+                    "Name": "assign_param_userId",
+                    "From": "Context:userId",
+                    "To": "Param:userId"
+                },
+                {
+                    "Type": "Assign",
+                    "Name": "assign_header_authorization",
+                    "From": "Context:token",
+                    "To": "Header:authorization"
+                }
+            ],
+            "Request": {
+                "Method": "GET",
+                "Url": "https://alpha.yunlizhihui.com/api/usercenter/user/v2/getUserTenant",
+                "Params": null,
+                "Headers": null,
+                "Body": null
+            },
+            "Asserts": [
+                {
+                    "Type": "Equal",
+                    "Left": "Body:code",
+                    "Right": "0"
+                },
+                {
+                    "Type": "NotNullOrEmpty",
+                    "Left": "Body:result.id"
+                },
+                {
+                    "Type": "NotNullOrEmpty",
+                    "Left": "Body:result.groupList[0].id"
+                }
+            ],
+            "PostActions": [
+                {
+                    "Type": "Assign",
+                    "Name": "save_body_tenantId",
+                    "From": "Body:result.id",
+                    "To": "Context:tenantId"
+                },
+                {
+                    "Type": "Assign",
+                    "Name": "save_body_tenantCode",
+                    "From": "Body:result.tenantCode",
+                    "To": "Context:tenantCode"
+                },
+                {
+                    "Type": "Assign",
+                    "Name": "save_body_tenantName",
+                    "From": "Body:result.tenantName",
+                    "To": "Context:tenantName"
+                },
+                {
+                    "Type": "Assign",
+                    "Name": "save_body_groupId",
+                    "From": "Body:result.groupList[0].id",
+                    "To": "Context:groupId"
+                },
+                {
+                    "Type": "Assign",
+                    "Name": "save_body_groupName",
+                    "From": "Body:result.groupList[0].groupName",
+                    "To": "Context:groupName"
+                }
+            ]
+        },
+        {
+            "Id": "请求导航菜单",
+            "PreActions": [
+                {
+                    "Type": "Assign",
+                    "Name": "assign_header_authorization",
+                    "From": "Context:token",
+                    "To": "Header:authorization"
+                },
+                {
+                    "Type": "Assign",
+                    "Name": "assign_body_operatorId",
+                    "From": "Context:userId",
+                    "To": "Body:operatorId"
+                },
+                {
+                    "Type": "Assign",
+                    "Name": "assign_body_tenantId",
+                    "From": "Context:tenantId",
+                    "To": "Body:tenantId"
+                },
+                {
+                    "Type": "Assign",
+                    "Name": "assign_body_topCode",
+                    "From": "\"alpha\"",
+                    "To": "Body:topCode"
+                },
+                {
+                    "Type": "Assign",
+                    "Name": "assign_body_userType",
+                    "From": "Context:userType",
+                    "To": "Body:userType"
+                }
+            ],
+            "Request": {
+                "Method": "POST",
+                "Url": "https://alpha.yunlizhihui.com/api/platformconf/api/v1/portal/getDynamicNavList",
+                "Params": null,
+                "Headers": null,
+                "Body": {
+                    "groupId": "",
+                    "tenantId": "",
+                    "operatorId": "",
+                    "topCode": "",
+                    "userType": 0
+                }
+            },
+            "Asserts": [
+                {
+                    "Type": "Equal",
+                    "Left": "Body:code",
+                    "Right": "0"
+                }
+            ],
+            "PostActions": []
+        }
+    ]
+}

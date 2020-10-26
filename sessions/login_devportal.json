@@ -1,0 +1,113 @@
+{
+    "Name": "开发者门户用户访问会话",
+    "Description": "用户访问开发者门户的基本会话",
+    "Context": {
+        "userAccount": "user",
+        "password": "pwd"
+    },
+    "Steps": [
+        {
+            "Id": "用户登录",
+            "PreActions": [
+                {
+                    "Type": "Assign",
+                    "Name": "assign_body_userAccount",
+                    "From": "Context:userAccount",
+                    "To": "Body:userAccount"
+                },
+                {
+                    "Type": "Assign",
+                    "Name": "assign_body_password",
+                    "From": "Context:password",
+                    "To": "Body:password"
+                }
+            ],
+            "Request": {
+                "Method": "POST",
+                "Url": "http://developer.yunlizhihui.com/api/devportal/authorize/phoneLogin",
+                "Body": {
+                    "userAccount": "",
+                    "password": "",
+                    "encryptionFlag": 1,
+                    "appType": "manage_access"
+                }
+            },
+            "Asserts": [
+                {
+                    "Type": "Equal",
+                    "Left": "Body:code",
+                    "Right": "0"
+                },
+                {
+                    "Type": "NotNullOrEmpty",
+                    "Left": "Body:result.token"
+                },
+                {
+                    "Type": "NotNullOrEmpty",
+                    "Left": "Body:result.userInfo.userId"
+                },
+                {
+                    "Type": "NotNullOrEmpty",
+                    "Left": "Body:result.userInfo.tenantId"
+                },
+                {
+                    "Type": "NotNullOrEmpty",
+                    "Left": "Body:result.userInfo.groupId"
+                }
+            ],
+            "PostActions": [
+                {
+                    "Type": "Assign",
+                    "Name": "save_body_token",
+                    "From": "Body:result.token",
+                    "To": "Context:token"
+                },
+                {
+                    "Type": "Assign",
+                    "Name": "save_body_userId",
+                    "From": "Body:result.userInfo.userId",
+                    "To": "Context:userId"
+                },
+                {
+                    "Type": "Assign",
+                    "Name": "save_body_tenantId",
+                    "From": "Body:result.userInfo.tenantId",
+                    "To": "Context:tenantId"
+                },
+                {
+                    "Type": "Assign",
+                    "Name": "save_body_groupId",
+                    "From": "Body:result.userInfo.groupId",
+                    "To": "Context:groupId"
+                }
+            ]
+        },
+        {
+            "Id": "检查用户Token",
+            "PreActions": [
+                {
+                    "Type": "Assign",
+                    "Name": "assign_header_authorization",
+                    "From": "Context:token",
+                    "To": "Header:authorization"
+                }
+            ],
+            "Request": {
+                "Method": "GET",
+                "Url": "http://developer.yunlizhihui.com/api/devportal/authorize/checkToken",
+                "Params": null,
+                "Headers": null,
+                "Body": null
+            },
+            "Asserts": [
+                {
+                    "Type": "Equal",
+                    "Left": "Body:code",
+                    "Right": "0"
+                }
+            ],
+            "PostActions": [
+            ]
+        }
+    ]
+}
